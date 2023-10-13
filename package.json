@@ -10,5 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "@types/wicg-file-system-access": "^2023.10.1"
   }
 }
