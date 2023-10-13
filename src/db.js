@@ -55,26 +55,6 @@ async function getDir() {
 
 async function readPackIndex() {
     const packUUIDs = [];
-    try {
-        piFile = ;
-
-        LOGGER.finest("Reading packs index from file: " + piFile);
-        FileInputStream packIndexFis = new FileInputStream(piFile);
-
-        byte[] packUuid = new byte[16];
-        while (packIndexFis.read(packUuid) > 0) {
-            ByteBuffer bb = ByteBuffer.wrap(packUuid);
-            long high = bb.getLong();
-            long low = bb.getLong();
-            packUUIDs.add(new UUID(high, low));
-        }
-
-        packIndexFis.close();
-
-        return packUUIDs;
-    } catch (Exception e) {
-        throw new StoryTellerException("Failed to read pack index on device partition", e);
-    }
 }
 
 function getNodeIndex() {
