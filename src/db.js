@@ -54,11 +54,49 @@ async function getDir() {
     for await (const [key, historyFSDirectoryHandle] of historyFolderList.entries()) {
         historyFSDirectoryHandle.getDirectoryHandle('sf')
         console.log({ key, value });
-        readPackIndex()
     }
+
+    console.dir(await getPacksList());
 }
 
+async function getPacksList() {
+    const packUUIDs = await readPackIndex();
+
+    console.log("Number of packs in index: " + packUUIDs.size());
+    const packs = [];
+    for (const packUUID of packUUIDs) {
+        console.log("Pack UUID: " + packUUID.toString());
+
+                        // Compute .content folder (last 4 bytes of UUID)
+        const folderName = computePackFolderName(packUUID.toString());
+        const historyFolderList = await dirHandle.getDirectoryHandle('.content');
+        const folderNameDirectoryHandle = await historyFolderList.getDirectoryHandle(folderName);
+        const niFileHandle = await folderNameDirectoryHandle.getFileHandle('ni');
+
+        const niFile = await niFileHandle.getFile();
+        const niFileStream = await niFile.arrayBuffer();
+        // ByteBuffer bb = ByteBuffer.wrap(niDis.readNBytes(512)).order(ByteOrder.LITTLE_ENDIAN);
+        // short version = bb.getShort(2);
+
+        let nightMode = false;
+        try {
+            const historyFolderList = await folderNameDirectoryHandle.getFileHandle('nm');
+            nightMode = true;
+        } catch(_) {
+        }
+
+        packs.add({
+            uuid: packUUID,
+            nightMode: nightMode,
+            version: '0',
+        });
+    }
+    return packs;
+}
+
+
 async function readPackIndex() {
+    /** @type {string[]} */
     const packUUIDs = [];
     const packIndexFSFileHandle = await dirHandle.getFileHandle('.pi');
     const packIndexFile = await packIndexFSFileHandle.getFile();
@@ -80,7 +118,17 @@ async function readPackIndex() {
         buffer = localbuff.subarray(i * 16);
       }
 
+      return packUUIDs;
+}
 
+/**
+ * 
+ * @param {string} uuid 
+ * @returns 
+ */
+export function computePackFolderName(uuid) {
+    const uuidStr = uuid.replace('-', '');
+    return uuidStr.substring(uuidStr.length() - 8).toUpperCase();
 }
 
 function getNodeIndex() {
